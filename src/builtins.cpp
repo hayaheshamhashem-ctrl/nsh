@@ -1,5 +1,6 @@
 #include "builtins.hpp"
 #include "unistd.h"
+#include "stdlib.h"
 #include <iostream>
 
 bool Builtins::handle(const std::vector<std::string> &tokens)
@@ -9,13 +10,13 @@ bool Builtins::handle(const std::vector<std::string> &tokens)
     else if (tokens[0] == "cd")
     {
         size_t argc = tokens.size();
-        const char *path = argc == 1 ? "~" : tokens[1].c_str();
+        std::string path = argc == 1 ? "~" : tokens[1];
 
         if (argc > 2)
             std::cerr << "cd: too many arguments" << std::endl;
         else
         {
-            int status = chdir(path);
+            int status = chdir(path == "~" ? getenv("HOME") : path.c_str());
 
             if (status != 0)
             {
@@ -26,7 +27,7 @@ bool Builtins::handle(const std::vector<std::string> &tokens)
                 else if (errno == EACCES)
                     msg = "permission denied";
 
-                std::cerr << "cd: " << msg << ": " << tokens[1] << std::endl;
+                std::cerr << "cd: " << msg << ": " << path << std::endl;
             }
         }
 
